@@ -14,7 +14,7 @@ async function request<T>(url: string): Promise<T> {
 }
 
 export const getEpisodes = (page = 1, pageSize = 20) =>
-  request<EpisodesResponse[]>(
+  request<EpisodesResponse>(
     `/podcast-episodes/read-models?pageNumber=${page}&pageSize=${pageSize}`,
   );
 
