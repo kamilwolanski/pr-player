@@ -4,6 +4,7 @@ export interface EpisodeRm {
   slug: string;
   podcastSlug: string;
   podcastTitle: string;
+  description: string;
   publishDate: string;
   audioDuration: number | null;
   videoDuration: number | null;
