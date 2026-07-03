@@ -1,0 +1,172 @@
+﻿"use client";
+
+import Image from "next/image";
+import { X, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
+import { EpisodeRm } from "@/types/episode";
+import { formatDurationSeconds } from "@/utils/time";
+import { Undo10Icon } from "./icons/Undo10Icon";
+import { Forward10Icon } from "./icons/Forward10Icon";
+
+type BottomPlayerProps = {
+  episode: EpisodeRm;
+  onPlaybackToggle: () => void;
+  onClose: () => void;
+  isPlaying?: boolean;
+  currentTime?: number;
+  volume?: number;
+};
+
+const BottomPlayer = ({
+  episode,
+  onPlaybackToggle,
+  onClose,
+  isPlaying = true,
+  currentTime = 522,
+  volume = 70,
+}: BottomPlayerProps) => {
+  const duration = episode.audioDuration ?? episode.videoDuration ?? 0;
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  return (
+    <aside className="fixed inset-x-0 bottom-0 z-50 border-t border-border-soft bg-header/95 shadow-player backdrop-blur-xl">
+      <div className="h-0.5 w-full bg-progress-track">
+        <div className="h-full bg-progress" style={{ width: `${progress}%` }} />
+      </div>
+
+      <div className="mx-auto flex h-20 w-full max-w-page items-center gap-3 px-4 md:h-24 md:justify-between md:gap-6 md:px-6">
+        <div className="flex min-w-0 flex-1 items-center gap-3 md:flex-none md:gap-4">
+          <div className="relative size-12 shrink-0 overflow-hidden rounded-thumbnail border border-border-soft bg-card md:size-16">
+            {episode.mainImage ? (
+              <Image
+                src={episode.mainImage.uri}
+                alt={episode.mainImage.title || episode.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 48px, 64px"
+              />
+            ) : (
+              <div className="flex size-full items-center justify-center bg-elevated text-xs text-muted">
+                PR
+              </div>
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1 leading-tight md:max-w-[16vw]">
+            <h3 className="truncate text-sm font-semibold text-foreground md:hidden">
+              {episode.title}
+            </h3>
+
+            <div className="hidden overflow-hidden md:block">
+              <h3 className="onnc-title-slide whitespace-nowrap text-lg font-semibold text-foreground">
+                {episode.title}
+              </h3>
+            </div>
+
+            <p className="mt-1 truncate text-xs font-medium text-muted md:text-sm md:text-primary">
+              {episode.podcastTitle}
+            </p>
+          </div>
+        </div>
+
+        <div className="hidden items-center gap-6 md:flex">
+          <button
+            type="button"
+            className="group flex size-11 items-center justify-center rounded-full text-muted transition hover:text-foreground"
+            aria-label="Cofnij o 10 sekund"
+          >
+            <Undo10Icon className="size-8" />
+          </button>
+
+          <button
+            type="button"
+            className="flex size-11 items-center justify-center rounded-full text-foreground transition hover:bg-card-hover"
+            aria-label="Poprzedni"
+          >
+            <SkipBack className="size-7 fill-current" />
+          </button>
+
+          <button
+            type="button"
+            className="flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-glow transition hover:bg-primary-hover active:bg-primary-active"
+            aria-label={isPlaying ? "Pauza" : "Odtwórz"}
+            onClick={onPlaybackToggle}
+          >
+            {isPlaying ? (
+              <Pause className="size-8 fill-current" />
+            ) : (
+              <Play className="ml-1 size-8 fill-current" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            className="flex size-11 items-center justify-center rounded-full text-foreground transition hover:bg-card-hover"
+            aria-label="Następny"
+          >
+            <SkipForward className="size-7 fill-current" />
+          </button>
+
+          <button
+            type="button"
+            className="group flex size-11 items-center justify-center rounded-full text-muted transition hover:text-foreground"
+            aria-label="Przewiń o 10 sekund"
+          >
+            <Forward10Icon className="size-8" />
+          </button>
+          <span className="text-sm tabular-nums text-muted">
+            {formatDurationSeconds(currentTime)}
+          </span>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2 md:gap-6">
+          <div className="hidden items-center gap-3 lg:flex">
+            <button
+              type="button"
+              className="flex size-10 items-center justify-center rounded-full text-foreground transition hover:bg-card-hover"
+              aria-label="Głośność"
+            >
+              <Volume2 className="size-6" />
+            </button>
+
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={volume}
+              readOnly
+              aria-label="Poziom głośności"
+              className="h-1 w-24 cursor-pointer appearance-none rounded-pill bg-progress-track accent-primary"
+            />
+          </div>
+
+          <div className="hidden h-14 w-px bg-border-soft lg:block" />
+
+          <button
+            type="button"
+            className="flex size-9 items-center justify-center rounded-full text-foreground transition hover:bg-card-hover md:size-11"
+            aria-label="Zamknij player"
+            onClick={onClose}
+          >
+            <X className="size-5 md:size-6" />
+          </button>
+
+          <button
+            type="button"
+            className="flex size-12 items-center justify-center rounded-full bg-primary text-white shadow-glow transition hover:bg-primary-hover active:bg-primary-active md:hidden"
+            aria-label={isPlaying ? "Pauza" : "Odtwórz"}
+            onClick={onPlaybackToggle}
+          >
+            {isPlaying ? (
+              <Pause className="size-6 fill-current" />
+            ) : (
+              <Play className="ml-0.5 size-6 fill-current" />
+            )}
+          </button>
+        </div>
+      </div>
+    </aside>
+  );
+};
+
+export default BottomPlayer;
+
