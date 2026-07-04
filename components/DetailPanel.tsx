@@ -18,14 +18,12 @@ import { formatDurationSeconds } from "@/utils/time";
 type DetailPanelProps = {
   episode: EpisodeRm;
   isPlaying: boolean;
-  onPlayToggle: () => void;
   className?: string;
 };
 
 const DetailPanel = ({
   episode,
   isPlaying,
-  onPlayToggle,
   className = "",
 }: DetailPanelProps) => {
   const canToggle = Boolean(episode.externalAudioId && episode.externalVideoId);
@@ -122,7 +120,6 @@ const DetailPanel = ({
         <div className="mt-6 flex flex-col gap-3 sm:flex-row lg:mt-8">
           <button
             type="button"
-            onClick={onPlayToggle}
             className="inline-flex w-full items-center justify-center gap-3 rounded-card bg-primary px-5 py-3 font-semibold text-white shadow-glow transition hover:bg-primary-hover active:bg-primary-active sm:w-fit lg:px-6"
           >
             {isPlaying ? (
