@@ -9,28 +9,49 @@ import { Forward10Icon } from "./icons/Forward10Icon";
 
 type BottomPlayerProps = {
   episode: EpisodeRm;
-  onPlaybackToggle: () => void;
   onClose: () => void;
+  volume: number;
   isPlaying?: boolean;
   currentTime?: number;
-  volume?: number;
 };
 
 const BottomPlayer = ({
   episode,
-  onPlaybackToggle,
   onClose,
   isPlaying = true,
-  currentTime = 522,
-  volume = 70,
+  currentTime = 0,
+  volume,
 }: BottomPlayerProps) => {
   const duration = episode.audioDuration ?? episode.videoDuration ?? 0;
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const formattedCurrentTime = formatDurationSeconds(currentTime);
+  const formattedDuration = formatDurationSeconds(duration);
 
   return (
     <aside className="fixed inset-x-0 bottom-0 z-50 border-t border-border-soft bg-header/95 shadow-player backdrop-blur-xl">
-      <div className="h-0.5 w-full bg-progress-track">
-        <div className="h-full bg-progress" style={{ width: `${progress}%` }} />
+      <div className="group relative h-3 w-full">
+        <div className="absolute left-0 top-0 h-0.5 w-full bg-progress-track transition-all group-focus-within:h-1 group-hover:h-1">
+          <div
+            className="h-full bg-progress transition-[width]"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-0 size-3 -translate-x-1/2 -translate-y-[5px] rounded-full border-2 border-header bg-progress shadow-glow transition-transform group-focus-within:scale-110 group-hover:scale-110"
+          style={{ left: `${progress}%` }}
+        />
+
+        <input
+          type="range"
+          min={0}
+          max={duration}
+          step={1}
+          value={0}
+          aria-label="Postęp odtwarzania"
+          className="absolute inset-0 h-3 w-full cursor-pointer appearance-none bg-transparent opacity-0"
+        />
       </div>
 
       <div className="mx-auto flex h-20 w-full max-w-page items-center gap-3 px-4 md:h-24 md:justify-between md:gap-6 md:px-6">
@@ -89,7 +110,6 @@ const BottomPlayer = ({
             type="button"
             className="flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-glow transition hover:bg-primary-hover active:bg-primary-active"
             aria-label={isPlaying ? "Pauza" : "Odtwórz"}
-            onClick={onPlaybackToggle}
           >
             {isPlaying ? (
               <Pause className="size-8 fill-current" />
@@ -113,8 +133,9 @@ const BottomPlayer = ({
           >
             <Forward10Icon className="size-8" />
           </button>
-          <span className="text-sm tabular-nums text-muted">
-            {formatDurationSeconds(currentTime)}
+
+          <span className="min-w-24 text-sm tabular-nums text-muted">
+            {formattedCurrentTime} / {formattedDuration}
           </span>
         </div>
 
@@ -133,7 +154,6 @@ const BottomPlayer = ({
               min={0}
               max={100}
               value={volume}
-              readOnly
               aria-label="Poziom głośności"
               className="h-1 w-24 cursor-pointer appearance-none rounded-pill bg-progress-track accent-primary"
             />
@@ -154,7 +174,6 @@ const BottomPlayer = ({
             type="button"
             className="flex size-12 items-center justify-center rounded-full bg-primary text-white shadow-glow transition hover:bg-primary-hover active:bg-primary-active md:hidden"
             aria-label={isPlaying ? "Pauza" : "Odtwórz"}
-            onClick={onPlaybackToggle}
           >
             {isPlaying ? (
               <Pause className="size-6 fill-current" />
@@ -169,4 +188,3 @@ const BottomPlayer = ({
 };
 
 export default BottomPlayer;
-
