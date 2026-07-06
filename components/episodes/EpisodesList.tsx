@@ -1,18 +1,27 @@
-﻿import EpisodeCard from "@/components/EpisodeCard";
+import { ChevronDown, Loader2 } from "lucide-react";
+import EpisodeCard from "@/components/EpisodeCard";
 import { EpisodeRm } from "@/types/episode";
 
 type EpisodesListProps = {
   episodes: EpisodeRm[];
   selectedEpisodeId: string;
   isMobileDetailMounted: boolean;
+  hasMoreEpisodes: boolean;
+  isLoadingMore: boolean;
+  loadMoreError: string | null;
   onEpisodeSelect: (episode: EpisodeRm) => void;
+  onLoadMore: () => void;
 };
 
 const EpisodesList = ({
   episodes,
   selectedEpisodeId,
   isMobileDetailMounted,
+  hasMoreEpisodes,
+  isLoadingMore,
+  loadMoreError,
   onEpisodeSelect,
+  onLoadMore,
 }: EpisodesListProps) => {
   return (
     <section aria-label="Lista odcinków" className="lg:order-1">
@@ -43,6 +52,30 @@ const EpisodesList = ({
             </button>
           );
         })}
+
+        {hasMoreEpisodes && (
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={onLoadMore}
+              disabled={isLoadingMore}
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border-soft bg-panel px-4 text-sm font-semibold text-foreground transition hover:border-primary/70 hover:bg-card-hover disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isLoadingMore ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <ChevronDown className="size-4" aria-hidden="true" />
+              )}
+              {isLoadingMore ? "Ładowanie..." : "Pokaż więcej"}
+            </button>
+          </div>
+        )}
+
+        {loadMoreError && (
+          <p className="px-1 text-sm text-primary" role="alert">
+            {loadMoreError}
+          </p>
+        )}
       </div>
     </section>
   );

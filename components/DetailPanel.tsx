@@ -3,8 +3,8 @@
   CalendarDays,
   Clock,
   ExternalLink,
-  Headphones,
   Pause,
+  Play,
   Radio,
   Video,
   VideoIcon,
@@ -251,7 +251,7 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
               </>
             ) : (
               <>
-                <Headphones className="size-5" />
+                <Play className="size-5 fill-current" />
                 Posłuchaj
               </>
             )}

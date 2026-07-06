@@ -22,7 +22,7 @@ export default async function Home() {
         </div>
       </header>
 
-      <EpisodesView episodes={episodes.data} />
+      <EpisodesView initialEpisodesResponse={episodes} />
     </div>
   );
 }

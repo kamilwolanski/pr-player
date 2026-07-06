@@ -13,12 +13,20 @@ type EpisodesViewContentProps = {
   episodes: EpisodeRm[];
   selectedEpisode: EpisodeRm;
   setSelectedEpisode: Dispatch<SetStateAction<EpisodeRm | null>>;
+  hasMoreEpisodes: boolean;
+  isLoadingMore: boolean;
+  loadMoreError: string | null;
+  onLoadMoreEpisodes: () => void;
 };
 
 const EpisodesViewContent = ({
   episodes,
   selectedEpisode,
   setSelectedEpisode,
+  hasMoreEpisodes,
+  isLoadingMore,
+  loadMoreError,
+  onLoadMoreEpisodes,
 }: EpisodesViewContentProps) => {
   const {
     audioRef,
@@ -35,7 +43,7 @@ const EpisodesViewContent = ({
     changeVolume,
     toggleMute,
     activeMediaType,
-    switchPlayingVideoToAudio
+    switchPlayingVideoToAudio,
   } = useMediaPlayerContext();
 
   const [isMobileDetailMounted, setIsMobileDetailMounted] = useState(false);
@@ -50,27 +58,27 @@ const EpisodesViewContent = ({
     ? "max-h-[calc(100dvh-5rem)]"
     : "max-h-[calc(100dvh-1rem)]";
 
-const selectEpisode = async (episode: EpisodeRm) => {
-  const isBrowsingDifferentEpisode = playingEpisode?.id !== episode.id;
+  const selectEpisode = async (episode: EpisodeRm) => {
+    const isBrowsingDifferentEpisode = playingEpisode?.id !== episode.id;
 
-  if (
-    activeMediaType === "video" &&
-    playingEpisode &&
-    isBrowsingDifferentEpisode
-  ) {
-    await switchPlayingVideoToAudio();
-  }
+    if (
+      activeMediaType === "video" &&
+      playingEpisode &&
+      isBrowsingDifferentEpisode
+    ) {
+      await switchPlayingVideoToAudio();
+    }
 
-  setSelectedEpisode(episode);
+    setSelectedEpisode(episode);
 
-  if (isMobile) {
-    setIsMobileDetailMounted(true);
+    if (isMobile) {
+      setIsMobileDetailMounted(true);
 
-    requestAnimationFrame(() => {
-      setIsMobileDetailOpen(true);
-    });
-  }
-};
+      requestAnimationFrame(() => {
+        setIsMobileDetailOpen(true);
+      });
+    }
+  };
 
   const closeMobileDetail = () => {
     setIsMobileDetailOpen(false);
@@ -99,7 +107,11 @@ const selectEpisode = async (episode: EpisodeRm) => {
           episodes={episodes}
           selectedEpisodeId={selectedEpisode.id}
           isMobileDetailMounted={isMobileDetailMounted}
+          hasMoreEpisodes={hasMoreEpisodes}
+          isLoadingMore={isLoadingMore}
+          loadMoreError={loadMoreError}
           onEpisodeSelect={selectEpisode}
+          onLoadMore={onLoadMoreEpisodes}
         />
 
         <section
