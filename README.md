@@ -13,12 +13,6 @@ Po starcie aplikacja będzie dostępna pod adresem:
 http://localhost:3000
 ```
 
-Obraz produkcyjny używa `output: "standalone"` z Next.js i uruchamia aplikację przez:
-
-```bash
-node server.js
-```
-
 ## Uruchomienie deweloperskie
 
 Wymagania:
