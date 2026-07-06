@@ -20,6 +20,7 @@ import { DetailCover } from "./DetailCover";
 import { useEpisodePreview } from "@/hooks/useEpisodePreview";
 import { useEffect, useState } from "react";
 import { ERROR_MESSAGES, STATUS_MESSAGES } from "@/constants/messages";
+import { buildEpisodeUrl } from "@/utils/buildEpisodeUrl";
 
 type DetailPanelProps = {
   episode: EpisodeRm;
@@ -91,6 +92,7 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
       ? formatDurationSeconds(episode.audioDuration)
       : null;
 
+  const episodeUrl = buildEpisodeUrl(episode.podcastSlug, episode.slug);
   const statusMessage = playbackError ?? mediaError;
   const isCurrentMediaLoading = isAudioTab
     ? isMediaFetching
@@ -358,7 +360,7 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
           </button>
 
           <a
-            href="#"
+            href={episodeUrl}
             target="_blank"
             rel="noreferrer"
             className="inline-flex w-full items-center justify-center gap-3 rounded-card border border-border bg-card px-5 py-3 font-semibold text-foreground transition hover:border-primary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-fit lg:px-6"
