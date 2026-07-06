@@ -1,7 +1,7 @@
 import { EpisodesResponse, MediaResponse } from "@/types/api";
 import { AudioAsset, VideoAsset } from "@/types/media";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const BASE_URL = "https://cms-gateway.polskieradio.pl/dev-proxy"
 
 async function request<T>(url: string): Promise<T> {
   const res = await fetch(`${BASE_URL}/${url}`);
