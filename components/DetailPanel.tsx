@@ -1,4 +1,4 @@
-﻿import {
+import {
   AudioLines,
   CalendarDays,
   Clock,
@@ -19,6 +19,7 @@ import { AudioWaveform } from "./WaveForm";
 import { DetailCover } from "./DetailCover";
 import { useEpisodePreview } from "@/hooks/useEpisodePreview";
 import { useEffect, useState } from "react";
+import { ERROR_MESSAGES, STATUS_MESSAGES } from "@/constants/messages";
 
 type DetailPanelProps = {
   episode: EpisodeRm;
@@ -31,23 +32,35 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
     handleTimeUpdate,
     handleLoadedMetadata,
     isPlaying,
+    activeMediaType,
     changeMediaType,
     videoRef,
     togglePlay,
+    togglePlayback,
     isMediaFetching,
+    mediaError,
+    playbackError,
     handleNativePause,
     handleNativePlay,
     loadMediaUrl,
     promotePreviewToPlayer,
-    handleMediaEnded
+    handleMediaEnded,
+    handleMediaError,
+    clearPlaybackError,
   } = useMediaPlayerContext();
 
-  const [tab, setTab] = useState<"audio" | "video">("audio");
+  const hasAudio = Boolean(episode.externalAudioId);
+  const hasVideo = Boolean(episode.externalVideoId);
+  const hasAnyMedia = hasAudio || hasVideo;
+  const [tab, setTab] = useState<"audio" | "video">(
+    hasAudio ? "audio" : "video",
+  );
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTab("audio");
-  }, [episode.id]);
+    setTab(hasAudio ? "audio" : "video");
+  }, [episode.id, hasAudio]);
+
   const isCurrentEpisode = playingEpisode?.id === episode.id;
 
   const {
@@ -62,9 +75,8 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
   });
 
   const isSelectedEpisodePlaying = isPlaying && isCurrentEpisode;
-
-  const hasAudio = Boolean(episode.externalAudioId);
-  const hasVideo = Boolean(episode.externalVideoId);
+  const isSelectedVideoPlaying =
+    isSelectedEpisodePlaying && activeMediaType === "video";
   const canToggle = hasAudio && hasVideo;
 
   const isAudioTab = tab === "audio";
@@ -79,7 +91,30 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
       ? formatDurationSeconds(episode.audioDuration)
       : null;
 
+  const statusMessage = playbackError ?? mediaError;
+  const isCurrentMediaLoading = isAudioTab
+    ? isMediaFetching
+    : isCurrentEpisode
+      ? isMediaFetching
+      : isPreviewLoading;
+  const isPrimaryButtonDisabled =
+    !hasAnyMedia ||
+    (isAudioTab && !hasAudio) ||
+    (isVideoTab && !hasVideo) ||
+    isCurrentMediaLoading;
+
+  const primaryButtonLabel = (() => {
+    if (!hasAnyMedia) return STATUS_MESSAGES.noMediaShort;
+    if (isCurrentMediaLoading) return STATUS_MESSAGES.loading;
+    if (isAudioTab && !hasAudio) return STATUS_MESSAGES.noAudioShort;
+    if (isVideoTab && !hasVideo) return STATUS_MESSAGES.noVideoShort;
+    if (isAudioTab) return isSelectedEpisodePlaying ? "Pauza" : "Posłuchaj";
+
+    return isSelectedVideoPlaying ? "Pauza" : "Obejrzyj";
+  })();
+
   const handleAudioTabClick = () => {
+    clearPlaybackError();
     setTab("audio");
 
     if (isCurrentEpisode) {
@@ -88,6 +123,7 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
   };
 
   const handleVideoTabClick = async () => {
+    clearPlaybackError();
     setTab("video");
 
     if (isCurrentEpisode) {
@@ -106,6 +142,39 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
       previewVideoUrl,
       previewVideoRef.current?.currentTime ?? 0,
     );
+  };
+
+  const handlePrimaryAction = async () => {
+    if (isPrimaryButtonDisabled) return;
+
+    if (isAudioTab) {
+      togglePlay();
+      return;
+    }
+
+    console.log('isCurrentEpisode', isCurrentEpisode)
+
+    if (isCurrentEpisode && activeMediaType === "video") {
+      togglePlayback();
+      return;
+    }
+
+    const videoUrl = previewVideoUrl ?? (await ensurePreviewLoaded());
+    if (!videoUrl) return;
+
+    promotePreviewToPlayer(
+      episode,
+      videoUrl,
+      previewVideoRef.current?.currentTime ?? 0,
+    );
+  };
+
+  const renderVideoState = () => {
+    if (!hasVideo) return ERROR_MESSAGES.videoUnavailable;
+    if (isCurrentMediaLoading) return STATUS_MESSAGES.videoLoading;
+    if (statusMessage) return statusMessage;
+
+    return STATUS_MESSAGES.videoLoadPrompt;
   };
 
   return (
@@ -142,6 +211,21 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
         </div>
       )}
 
+      {statusMessage && (
+        <p
+          className="mb-5 rounded-card border border-primary/40 bg-primary-soft px-4 py-3 text-sm font-medium text-foreground"
+          role="alert"
+        >
+          {statusMessage}
+        </p>
+      )}
+
+      {!hasAnyMedia && (
+        <p className="mb-5 rounded-card border border-border-soft bg-card px-4 py-3 text-sm font-medium text-muted">
+          {ERROR_MESSAGES.noMedia}
+        </p>
+      )}
+
       {isAudioTab ? (
         <div className="flex flex-col items-center gap-5 md:mt-4 md:flex-row md:gap-8 lg:mt-10">
           <DetailCover image={episode.mainImage} title={episode.title} />
@@ -166,6 +250,7 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
                 onPlay={handleNativePlay}
                 onPause={handleNativePause}
                 onEnded={handleMediaEnded}
+                onError={handleMediaError}
               />
             ) : (
               <video
@@ -176,13 +261,12 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
                 playsInline
                 controls
                 onPlay={handlePreviewPlay}
+                onError={handleMediaError}
               />
             )
           ) : (
-            <div className="flex aspect-video w-full items-center justify-center text-sm font-medium text-muted">
-              {(isCurrentEpisode ? isMediaFetching : isPreviewLoading)
-                ? "Ładowanie wideo..."
-                : "Wybierz wideo"}
+            <div className="flex aspect-video w-full items-center justify-center px-4 text-center text-sm font-medium text-muted">
+              {renderVideoState()}
             </div>
           )}
         </div>
@@ -241,20 +325,16 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
         <div className="mt-6 flex flex-col gap-3 sm:flex-row lg:mt-8">
           <button
             type="button"
-            className="inline-flex w-full items-center justify-center gap-3 rounded-card bg-primary px-5 py-3 font-semibold text-white shadow-glow transition hover:bg-primary-hover active:bg-primary-active sm:w-fit lg:px-6"
-            onClick={() => togglePlay()}
+            className="inline-flex w-full items-center justify-center gap-3 rounded-card bg-primary px-5 py-3 font-semibold text-white shadow-glow transition hover:bg-primary-hover active:bg-primary-active disabled:cursor-not-allowed disabled:opacity-60 sm:w-fit lg:px-6"
+            onClick={handlePrimaryAction}
+            disabled={isPrimaryButtonDisabled}
           >
             {isSelectedEpisodePlaying ? (
-              <>
-                <Pause className="size-5 fill-current" />
-                Pauza
-              </>
+              <Pause className="size-5 fill-current" />
             ) : (
-              <>
-                <Play className="size-5 fill-current" />
-                Posłuchaj
-              </>
+              <Play className="size-5 fill-current" />
             )}
+            {primaryButtonLabel}
           </button>
 
           <a

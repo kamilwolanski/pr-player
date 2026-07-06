@@ -1,6 +1,7 @@
 import { ChevronDown, Loader2 } from "lucide-react";
 import EpisodeCard from "@/components/EpisodeCard";
 import { EpisodeRm } from "@/types/episode";
+import { STATUS_MESSAGES } from "@/constants/messages";
 
 type EpisodesListProps = {
   episodes: EpisodeRm[];
@@ -66,7 +67,7 @@ const EpisodesList = ({
               ) : (
                 <ChevronDown className="size-4" aria-hidden="true" />
               )}
-              {isLoadingMore ? "Ładowanie..." : "Pokaż więcej"}
+              {isLoadingMore ? STATUS_MESSAGES.loading : "Pokaż więcej"}
             </button>
           </div>
         )}

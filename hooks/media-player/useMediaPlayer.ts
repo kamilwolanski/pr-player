@@ -4,6 +4,8 @@ import { useMediaLoader } from "./useMediaLoader";
 import { useMediaElementControls } from "./useMediaElementControls";
 import { clampTime, clampVolume, getMediaDuration } from "./mediaPlayer.utils";
 import { MediaType, PlayableEpisode } from "./mediaPlayer.types";
+import { ERROR_MESSAGES } from "@/constants/messages";
+
 
 const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
   const [playingEpisode, setPlayingEpisode] = useState<PlayableEpisode | null>(
@@ -13,8 +15,10 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [activeMediaType, setActiveMediaType] = useState<MediaType>("audio");
-  const { isMediaFetching, loadMediaUrl } = useMediaLoader();
+  const { isMediaFetching, mediaError, clearMediaError, loadMediaUrl } =
+    useMediaLoader();
   const [volume, setVolume] = useState(0.5);
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
   const lastNonZeroVolumeRef = useRef(0.5);
   const {
     audioRef,
@@ -28,9 +32,24 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
     applyVolume,
   } = useMediaElementControls();
 
+  const clearPlaybackError = () => {
+    setPlaybackError(null);
+    clearMediaError();
+  };
+
+  const handlePlayFailure = () => {
+    setIsPlaying(false);
+    setPlaybackError(ERROR_MESSAGES.playbackStart);
+  };
+
   const togglePlayback = async () => {
     const activeMedia = getMediaElement(activeMediaType);
-    if (!activeMedia) return;
+    if (!activeMedia) {
+      setPlaybackError(ERROR_MESSAGES.activePlayerMissing);
+      return;
+    }
+
+    clearPlaybackError();
 
     if (isPlaying) {
       pauseMedia(activeMediaType);
@@ -39,11 +58,22 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
     }
 
     const didPlay = await playMedia(activeMediaType);
-    setIsPlaying(didPlay);
+
+    if (!didPlay) {
+      handlePlayFailure();
+      return;
+    }
+
+    setIsPlaying(true);
   };
 
   const startPlay = async (episode: EpisodeRm) => {
-    if (!episode.externalAudioId) return;
+    clearPlaybackError();
+
+    if (!episode.externalAudioId) {
+      setPlaybackError(ERROR_MESSAGES.noAudio);
+      return;
+    }
 
     pauseAllMedia();
     resetMediaTime();
@@ -99,8 +129,17 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
 
     if (!episode) return;
 
-    if (nextMediaType === "audio" && !episode.externalAudioId) return;
-    if (nextMediaType === "video" && !episode.externalVideoId) return;
+    clearPlaybackError();
+
+    if (nextMediaType === "audio" && !episode.externalAudioId) {
+      setPlaybackError(ERROR_MESSAGES.noAudio);
+      return;
+    }
+
+    if (nextMediaType === "video" && !episode.externalVideoId) {
+      setPlaybackError(ERROR_MESSAGES.noVideo);
+      return;
+    }
 
     const isDifferentEpisode = playingEpisode?.id !== episode.id;
     const nextTime = isDifferentEpisode ? 0 : currentTime;
@@ -117,9 +156,9 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
 
     const hadUrlAlready = Boolean(
       !isDifferentEpisode &&
-      (nextMediaType === "audio"
-        ? playingEpisode?.audioUrl
-        : playingEpisode?.videoUrl),
+        (nextMediaType === "audio"
+          ? playingEpisode?.audioUrl
+          : playingEpisode?.videoUrl),
     );
 
     const url = await resolveMediaUrl(
@@ -168,6 +207,7 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
     startTime: number;
     shouldContinuePlaying: boolean;
   }) => {
+    clearPlaybackError();
     pauseAllMedia();
 
     setPlayingEpisode((prev) => {
@@ -200,16 +240,17 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
     media.currentTime = startTime;
 
     if (shouldContinuePlaying) {
-      media.play().catch(() => {
-        setIsPlaying(false);
-      });
+      media.play().catch(handlePlayFailure);
     }
   };
 
   const switchPlayingVideoToAudio = async () => {
     if (!playingEpisode) return;
     if (activeMediaType !== "video") return;
-    if (!playingEpisode.externalAudioId) return;
+    if (!playingEpisode.externalAudioId) {
+      setPlaybackError(ERROR_MESSAGES.noAudio);
+      return;
+    }
 
     const videoTime = videoRef.current?.currentTime ?? currentTime;
     const shouldContinuePlaying = isPlaying;
@@ -249,9 +290,7 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
     activeMedia.currentTime = currentTime;
 
     if (isPlaying) {
-      activeMedia.play().catch(() => {
-        setIsPlaying(false);
-      });
+      activeMedia.play().catch(handlePlayFailure);
     }
   };
 
@@ -271,6 +310,7 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
   };
 
   const handleNativePlay = () => {
+    clearPlaybackError();
     setIsPlaying(true);
   };
 
@@ -285,6 +325,11 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
     changeVolume(media.volume);
   };
 
+  const handleMediaError = () => {
+    setIsPlaying(false);
+    setPlaybackError(ERROR_MESSAGES.mediaElementPlayback);
+  };
+
   const closePlayer = () => {
     pauseAllMedia();
 
@@ -292,6 +337,7 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
     setIsPlaying(false);
     setCurrentTime(0);
     setActiveMediaType("audio");
+    clearPlaybackError();
 
     seekMedia(0);
   };
@@ -330,13 +376,11 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
     if (activeMediaType === "video") {
       audioRef.current?.pause();
     }
-    console.log("currentTime useEffe", currentTime);
+
     activeMedia.currentTime = currentTime;
 
     if (isPlaying) {
-      activeMedia.play().catch(() => {
-        setIsPlaying(false);
-      });
+      activeMedia.play().catch(handlePlayFailure);
     }
   }, [activeMediaType]);
 
@@ -353,6 +397,8 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
     currentTime,
     activeMediaType,
     isMediaFetching,
+    mediaError,
+    playbackError,
     volume,
     loadMediaUrl,
 
@@ -364,6 +410,7 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
     closePlayer,
     promotePreviewToPlayer,
     switchPlayingVideoToAudio,
+    clearPlaybackError,
 
     handleLoadedMetadata,
     handleTimeUpdate,
@@ -371,9 +418,9 @@ const useMediaPlayer = (selectedEpisode: EpisodeRm | null) => {
     handleNativePause,
     handleNativeVolumeChange,
     handleMediaEnded,
+    handleMediaError,
     changeVolume,
     toggleMute,
-    
   };
 };
 

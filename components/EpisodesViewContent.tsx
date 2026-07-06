@@ -34,6 +34,7 @@ const EpisodesViewContent = ({
     handleTimeUpdate,
     handleLoadedMetadata,
     handleMediaEnded,
+    handleMediaError,
     currentTime,
     togglePlayback,
     seekTo,
@@ -43,6 +44,8 @@ const EpisodesViewContent = ({
     changeVolume,
     toggleMute,
     activeMediaType,
+    playbackError,
+    mediaError,
     switchPlayingVideoToAudio,
   } = useMediaPlayerContext();
 
@@ -101,6 +104,7 @@ const EpisodesViewContent = ({
           onLoadedMetadata={handleLoadedMetadata}
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleMediaEnded}
+          onError={handleMediaError}
         />
 
         <EpisodesList
@@ -138,6 +142,7 @@ const EpisodesViewContent = ({
           episode={playingEpisode}
           currentTime={currentTime}
           isPlaying={isPlaying}
+          playbackError={playbackError ?? mediaError}
           onClose={closePlayer}
           volume={volume}
           togglePlay={togglePlayback}

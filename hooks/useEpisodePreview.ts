@@ -16,7 +16,6 @@ export const useEpisodePreview = ({
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const previewVideoRef = useRef<HTMLVideoElement>(null);
 
-  // reset przy zmianie odcinka
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPreviewVideoUrl(undefined);
@@ -24,12 +23,16 @@ export const useEpisodePreview = ({
   }, [episode.id]);
 
   const ensurePreviewLoaded = async () => {
-    if (isCurrentEpisode || previewVideoUrl || isPreviewLoading) return;
+    if (isCurrentEpisode) return null;
+    if (previewVideoUrl) return previewVideoUrl;
+    if (isPreviewLoading) return null;
 
     setIsPreviewLoading(true);
     try {
       const url = await loadMediaUrl(episode, "video");
       if (url) setPreviewVideoUrl(url);
+
+      return url;
     } finally {
       setIsPreviewLoading(false);
     }

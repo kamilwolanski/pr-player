@@ -4,6 +4,7 @@ import { useState } from "react";
 import { EpisodeRm } from "@/types/episode";
 import { EpisodesResponse } from "@/types/api";
 import { getEpisodes } from "@/services/api";
+import { ERROR_MESSAGES } from "@/constants/messages";
 
 import EpisodesViewContent from "./EpisodesViewContent";
 import { MediaPlayerProvider } from "@/providers/MediaPlayer";
@@ -55,7 +56,7 @@ const EpisodesView = ({ initialEpisodesResponse }: EpisodesViewProps) => {
       setPageNumber(nextPage.pageNumber);
       setTotalPages(nextPage.totalPages);
     } catch {
-      setLoadMoreError("Nie udało się pobrać kolejnych odcinków.");
+      setLoadMoreError(ERROR_MESSAGES.episodesLoadMore);
     } finally {
       setIsLoadingMore(false);
     }
@@ -64,7 +65,7 @@ const EpisodesView = ({ initialEpisodesResponse }: EpisodesViewProps) => {
   if (!selectedEpisode) {
     return (
       <main className="mx-auto w-full max-w-page px-4 py-6 sm:px-6 md:px-8">
-        <p>Brak odcinków do wyświetlenia</p>
+        <p>{ERROR_MESSAGES.noEpisodes}</p>
       </main>
     );
   }

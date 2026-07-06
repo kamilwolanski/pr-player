@@ -1,7 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { X, Pause, Play, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
+import {
+  X,
+  Pause,
+  Play,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { formatDurationSeconds } from "@/utils/time";
 import { Undo10Icon } from "./icons/Undo10Icon";
 import { Forward10Icon } from "./icons/Forward10Icon";
@@ -13,6 +21,7 @@ type BottomPlayerProps = {
   volume: number;
   isPlaying?: boolean;
   currentTime?: number;
+  playbackError?: string | null;
   togglePlay: () => void;
   onSeek: (time: number) => void;
   onVolumeChange: (volume: number) => void;
@@ -25,6 +34,7 @@ const BottomPlayer = ({
   isPlaying = true,
   currentTime = 0,
   volume,
+  playbackError,
   togglePlay,
   onSeek,
   onVolumeChange,
@@ -38,6 +48,12 @@ const BottomPlayer = ({
 
   return (
     <aside className="fixed inset-x-0 bottom-0 z-50 border-t border-border-soft bg-header/95 shadow-player backdrop-blur-xl">
+      {playbackError && (
+        <div className="border-b border-primary/30 bg-primary-soft px-4 py-2 text-center text-sm font-medium text-foreground" role="alert">
+          {playbackError}
+        </div>
+      )}
+
       <div className="group relative h-3 w-full">
         <div className="absolute left-0 top-0 h-0.5 w-full bg-progress-track transition-all group-focus-within:h-1 group-hover:h-1">
           <div
