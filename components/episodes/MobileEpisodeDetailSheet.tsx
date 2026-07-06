@@ -60,7 +60,6 @@ const MobileEpisodeDetailSheet = ({
         <DetailPanel
           episode={episode}
           className="rounded-none bg-transparent pt-2 shadow-none sm:p-6 md:p-8"
-          isPlaying={false}
         />
       </section>
     </div>

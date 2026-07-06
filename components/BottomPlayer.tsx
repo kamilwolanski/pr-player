@@ -1,18 +1,22 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
-import { X, Pause, Play, SkipBack, SkipForward, Volume2 } from "lucide-react";
-import { EpisodeRm } from "@/types/episode";
+import { X, Pause, Play, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
 import { formatDurationSeconds } from "@/utils/time";
 import { Undo10Icon } from "./icons/Undo10Icon";
 import { Forward10Icon } from "./icons/Forward10Icon";
+import { PlayableEpisode } from "@/hooks/media-player/mediaPlayer.types";
 
 type BottomPlayerProps = {
-  episode: EpisodeRm;
+  episode: PlayableEpisode;
   onClose: () => void;
   volume: number;
   isPlaying?: boolean;
   currentTime?: number;
+  togglePlay: () => void;
+  onSeek: (time: number) => void;
+  onVolumeChange: (volume: number) => void;
+  onToggleMute: () => void;
 };
 
 const BottomPlayer = ({
@@ -21,11 +25,16 @@ const BottomPlayer = ({
   isPlaying = true,
   currentTime = 0,
   volume,
+  togglePlay,
+  onSeek,
+  onVolumeChange,
+  onToggleMute,
 }: BottomPlayerProps) => {
   const duration = episode.audioDuration ?? episode.videoDuration ?? 0;
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
   const formattedCurrentTime = formatDurationSeconds(currentTime);
   const formattedDuration = formatDurationSeconds(duration);
+  const volumePercent = Math.round(volume * 100);
 
   return (
     <aside className="fixed inset-x-0 bottom-0 z-50 border-t border-border-soft bg-header/95 shadow-player backdrop-blur-xl">
@@ -48,7 +57,8 @@ const BottomPlayer = ({
           min={0}
           max={duration}
           step={1}
-          value={0}
+          value={currentTime}
+          onChange={(event) => onSeek(Number(event.target.value))}
           aria-label="Postęp odtwarzania"
           className="absolute inset-0 h-3 w-full cursor-pointer appearance-none bg-transparent opacity-0"
         />
@@ -94,6 +104,7 @@ const BottomPlayer = ({
             type="button"
             className="group flex size-11 items-center justify-center rounded-full text-muted transition hover:text-foreground"
             aria-label="Cofnij o 10 sekund"
+            onClick={() => onSeek(currentTime - 10)}
           >
             <Undo10Icon className="size-8" />
           </button>
@@ -110,6 +121,7 @@ const BottomPlayer = ({
             type="button"
             className="flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-glow transition hover:bg-primary-hover active:bg-primary-active"
             aria-label={isPlaying ? "Pauza" : "Odtwórz"}
+            onClick={togglePlay}
           >
             {isPlaying ? (
               <Pause className="size-8 fill-current" />
@@ -130,6 +142,7 @@ const BottomPlayer = ({
             type="button"
             className="group flex size-11 items-center justify-center rounded-full text-muted transition hover:text-foreground"
             aria-label="Przewiń o 10 sekund"
+            onClick={() => onSeek(currentTime + 10)}
           >
             <Forward10Icon className="size-8" />
           </button>
@@ -144,16 +157,24 @@ const BottomPlayer = ({
             <button
               type="button"
               className="flex size-10 items-center justify-center rounded-full text-foreground transition hover:bg-card-hover"
-              aria-label="Głośność"
+              aria-label={volume === 0 ? "Przywróć głośność" : "Wycisz"}
+              onClick={onToggleMute}
             >
-              <Volume2 className="size-6" />
+              {volume === 0 ? (
+                <VolumeX className="size-6" />
+              ) : (
+                <Volume2 className="size-6" />
+              )}
             </button>
 
             <input
               type="range"
               min={0}
               max={100}
-              value={volume}
+              value={volumePercent}
+              onChange={(event) => {
+                onVolumeChange(Number(event.target.value) / 100);
+              }}
               aria-label="Poziom głośności"
               className="h-1 w-24 cursor-pointer appearance-none rounded-pill bg-progress-track accent-primary"
             />
@@ -174,6 +195,7 @@ const BottomPlayer = ({
             type="button"
             className="flex size-12 items-center justify-center rounded-full bg-primary text-white shadow-glow transition hover:bg-primary-hover active:bg-primary-active md:hidden"
             aria-label={isPlaying ? "Pauza" : "Odtwórz"}
+            onClick={togglePlay}
           >
             {isPlaying ? (
               <Pause className="size-6 fill-current" />
