@@ -28,6 +28,9 @@ type BottomPlayerProps = {
   onToggleMute: () => void;
 };
 
+const iconButtonClassName =
+  "flex size-11 items-center justify-center rounded-full text-foreground transition hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-40";
+
 const BottomPlayer = ({
   episode,
   onClose,
@@ -47,9 +50,15 @@ const BottomPlayer = ({
   const volumePercent = Math.round(volume * 100);
 
   return (
-    <aside className="fixed inset-x-0 bottom-0 z-50 border-t border-border-soft bg-header/95 shadow-player backdrop-blur-xl">
+    <aside
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border-soft bg-header/95 shadow-player backdrop-blur-xl"
+      aria-label="Odtwarzacz"
+    >
       {playbackError && (
-        <div className="border-b border-primary/30 bg-primary-soft px-4 py-2 text-center text-sm font-medium text-foreground" role="alert">
+        <div
+          className="border-b border-primary/30 bg-primary-soft px-4 py-2 text-center text-sm font-medium text-foreground"
+          role="alert"
+        >
           {playbackError}
         </div>
       )}
@@ -76,7 +85,8 @@ const BottomPlayer = ({
           value={currentTime}
           onChange={(event) => onSeek(Number(event.target.value))}
           aria-label="Postęp odtwarzania"
-          className="absolute inset-0 h-3 w-full cursor-pointer appearance-none bg-transparent opacity-0"
+          aria-valuetext={`${formattedCurrentTime} z ${formattedDuration}`}
+          className="absolute inset-0 h-3 w-full cursor-pointer appearance-none bg-transparent opacity-0 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         />
       </div>
 
@@ -118,7 +128,7 @@ const BottomPlayer = ({
         <div className="hidden items-center gap-6 md:flex">
           <button
             type="button"
-            className="group flex size-11 items-center justify-center rounded-full text-muted transition hover:text-foreground"
+            className="group flex size-11 items-center justify-center rounded-full text-muted transition hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             aria-label="Cofnij o 10 sekund"
             onClick={() => onSeek(currentTime - 10)}
           >
@@ -127,43 +137,45 @@ const BottomPlayer = ({
 
           <button
             type="button"
-            className="flex size-11 items-center justify-center rounded-full text-foreground transition hover:bg-card-hover"
-            aria-label="Poprzedni"
+            className={iconButtonClassName}
+            aria-label="Poprzedni odcinek"
+            disabled
           >
-            <SkipBack className="size-7 fill-current" />
+            <SkipBack className="size-7 fill-current" aria-hidden="true" />
           </button>
 
           <button
             type="button"
-            className="flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-glow transition hover:bg-primary-hover active:bg-primary-active"
+            className="flex size-16 items-center justify-center rounded-full bg-primary text-white shadow-glow transition hover:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:bg-primary-active"
             aria-label={isPlaying ? "Pauza" : "Odtwórz"}
             onClick={togglePlay}
           >
             {isPlaying ? (
-              <Pause className="size-8 fill-current" />
+              <Pause className="size-8 fill-current" aria-hidden="true" />
             ) : (
-              <Play className="ml-1 size-8 fill-current" />
+              <Play className="ml-1 size-8 fill-current" aria-hidden="true" />
             )}
           </button>
 
           <button
             type="button"
-            className="flex size-11 items-center justify-center rounded-full text-foreground transition hover:bg-card-hover"
-            aria-label="Następny"
+            className={iconButtonClassName}
+            aria-label="Następny odcinek"
+            disabled
           >
-            <SkipForward className="size-7 fill-current" />
+            <SkipForward className="size-7 fill-current" aria-hidden="true" />
           </button>
 
           <button
             type="button"
-            className="group flex size-11 items-center justify-center rounded-full text-muted transition hover:text-foreground"
+            className="group flex size-11 items-center justify-center rounded-full text-muted transition hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             aria-label="Przewiń o 10 sekund"
             onClick={() => onSeek(currentTime + 10)}
           >
             <Forward10Icon className="size-8" />
           </button>
 
-          <span className="min-w-24 text-sm tabular-nums text-muted">
+          <span className="min-w-24 text-sm tabular-nums text-muted" aria-live="polite">
             {formattedCurrentTime} / {formattedDuration}
           </span>
         </div>
@@ -172,14 +184,14 @@ const BottomPlayer = ({
           <div className="hidden items-center gap-3 lg:flex">
             <button
               type="button"
-              className="flex size-10 items-center justify-center rounded-full text-foreground transition hover:bg-card-hover"
+              className="flex size-10 items-center justify-center rounded-full text-foreground transition hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               aria-label={volume === 0 ? "Przywróć głośność" : "Wycisz"}
               onClick={onToggleMute}
             >
               {volume === 0 ? (
-                <VolumeX className="size-6" />
+                <VolumeX className="size-6" aria-hidden="true" />
               ) : (
-                <Volume2 className="size-6" />
+                <Volume2 className="size-6" aria-hidden="true" />
               )}
             </button>
 
@@ -192,7 +204,8 @@ const BottomPlayer = ({
                 onVolumeChange(Number(event.target.value) / 100);
               }}
               aria-label="Poziom głośności"
-              className="h-1 w-24 cursor-pointer appearance-none rounded-pill bg-progress-track accent-primary"
+              aria-valuetext={`${volumePercent}%`}
+              className="h-1 w-24 cursor-pointer appearance-none rounded-pill bg-progress-track accent-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
             />
           </div>
 
@@ -200,23 +213,23 @@ const BottomPlayer = ({
 
           <button
             type="button"
-            className="flex size-9 items-center justify-center rounded-full text-foreground transition hover:bg-card-hover md:size-11"
+            className="flex size-9 items-center justify-center rounded-full text-foreground transition hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:size-11"
             aria-label="Zamknij player"
             onClick={onClose}
           >
-            <X className="size-5 md:size-6" />
+            <X className="size-5 md:size-6" aria-hidden="true" />
           </button>
 
           <button
             type="button"
-            className="flex size-12 items-center justify-center rounded-full bg-primary text-white shadow-glow transition hover:bg-primary-hover active:bg-primary-active md:hidden"
+            className="flex size-12 items-center justify-center rounded-full bg-primary text-white shadow-glow transition hover:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:bg-primary-active md:hidden"
             aria-label={isPlaying ? "Pauza" : "Odtwórz"}
             onClick={togglePlay}
           >
             {isPlaying ? (
-              <Pause className="size-6 fill-current" />
+              <Pause className="size-6 fill-current" aria-hidden="true" />
             ) : (
-              <Play className="ml-0.5 size-6 fill-current" />
+              <Play className="ml-0.5 size-6 fill-current" aria-hidden="true" />
             )}
           </button>
         </div>

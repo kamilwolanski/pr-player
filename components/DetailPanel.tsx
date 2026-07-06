@@ -152,8 +152,6 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
       return;
     }
 
-    console.log('isCurrentEpisode', isCurrentEpisode)
-
     if (isCurrentEpisode && activeMediaType === "video") {
       togglePlayback();
       return;
@@ -180,32 +178,43 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
   return (
     <div
       className={`relative overflow-hidden rounded-panel bg-panel p-4 sm:p-5 md:p-8 ${className}`}
+      aria-busy={isCurrentMediaLoading}
     >
       {canToggle && (
-        <div className="mb-5 flex w-fit rounded-pill bg-elevated p-1 md:absolute md:right-5 md:top-5 md:mb-0">
+        <div
+          className="mb-5 flex w-fit rounded-pill bg-elevated p-1 md:absolute md:right-5 md:top-5 md:mb-0"
+          role="tablist"
+          aria-label="Wybór typu mediów"
+        >
           <button
             type="button"
-            className={`flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-semibold transition md:px-5 md:py-2.5 ${
+            role="tab"
+            aria-selected={isAudioTab}
+            aria-controls="episode-audio-panel"
+            className={`flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:px-5 md:py-2.5 ${
               isAudioTab
                 ? "bg-primary text-white shadow-glow hover:bg-primary-hover"
                 : "text-muted hover:text-foreground"
             }`}
             onClick={handleAudioTabClick}
           >
-            <AudioLines className="h-4 w-4" />
+            <AudioLines className="h-4 w-4" aria-hidden="true" />
             Audio
           </button>
 
           <button
             type="button"
-            className={`flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-semibold transition md:px-5 md:py-2.5 ${
+            role="tab"
+            aria-selected={isVideoTab}
+            aria-controls="episode-video-panel"
+            className={`flex items-center gap-2 rounded-pill px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:px-5 md:py-2.5 ${
               isVideoTab
                 ? "bg-primary text-white shadow-glow hover:bg-primary-hover"
                 : "text-muted hover:text-foreground"
             }`}
             onClick={handleVideoTabClick}
           >
-            <VideoIcon className="h-4 w-4" />
+            <VideoIcon className="h-4 w-4" aria-hidden="true" />
             Video
           </button>
         </div>
@@ -227,15 +236,23 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
       )}
 
       {isAudioTab ? (
-        <div className="flex flex-col items-center gap-5 md:mt-4 md:flex-row md:gap-8 lg:mt-10">
+        <div
+          id="episode-audio-panel"
+          role="tabpanel"
+          className="flex flex-col items-center gap-5 md:mt-4 md:flex-row md:gap-8 lg:mt-10"
+        >
           <DetailCover image={episode.mainImage} title={episode.title} />
 
-          <div className="hidden h-40 w-full md:flex-1 lg:block">
+          <div className="hidden h-40 w-full md:flex-1 lg:block" aria-hidden="true">
             <AudioWaveform isPlaying={isSelectedEpisodePlaying} />
           </div>
         </div>
       ) : (
-        <div className="mt-4 overflow-hidden rounded-panel border border-border-soft bg-black lg:mt-10">
+        <div
+          id="episode-video-panel"
+          role="tabpanel"
+          className="mt-4 overflow-hidden rounded-panel border border-border-soft bg-black lg:mt-10"
+        >
           {displayVideoUrl ? (
             isCurrentEpisode ? (
               <video
@@ -243,6 +260,7 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
                 ref={videoRef}
                 src={displayVideoUrl}
                 className="aspect-video w-full bg-black"
+                aria-label={`Odtwarzacz wideo: ${episode.title}`}
                 playsInline
                 controls
                 onLoadedMetadata={handleLoadedMetadata}
@@ -258,6 +276,7 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
                 ref={previewVideoRef}
                 src={displayVideoUrl}
                 className="aspect-video w-full bg-black"
+                aria-label={`Podgląd wideo: ${episode.title}`}
                 playsInline
                 controls
                 onPlay={handlePreviewPlay}
@@ -283,7 +302,7 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
 
         <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted lg:mt-5 lg:gap-x-4">
           <span className="inline-flex items-center gap-2">
-            <CalendarDays className="size-4" />
+            <CalendarDays className="size-4" aria-hidden="true" />
             {formatPolishDate(episode.publishDate)}
           </span>
 
@@ -291,7 +310,7 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
             <>
               <span aria-hidden="true">•</span>
               <span className="inline-flex items-center gap-2">
-                <Clock className="size-4" />
+                <Clock className="size-4" aria-hidden="true" />
                 {duration}
               </span>
             </>
@@ -301,7 +320,7 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
             <>
               <span aria-hidden="true">•</span>
               <span className="inline-flex items-center gap-2">
-                <Radio className="size-4" />
+                <Radio className="size-4" aria-hidden="true" />
                 Dostępne w audio
               </span>
             </>
@@ -311,7 +330,7 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
             <>
               <span aria-hidden="true">•</span>
               <span className="inline-flex items-center gap-2">
-                <Video className="size-4" />
+                <Video className="size-4" aria-hidden="true" />
                 Dostępne w wideo
               </span>
             </>
@@ -325,14 +344,15 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
         <div className="mt-6 flex flex-col gap-3 sm:flex-row lg:mt-8">
           <button
             type="button"
-            className="inline-flex w-full items-center justify-center gap-3 rounded-card bg-primary px-5 py-3 font-semibold text-white shadow-glow transition hover:bg-primary-hover active:bg-primary-active disabled:cursor-not-allowed disabled:opacity-60 sm:w-fit lg:px-6"
+            className="inline-flex w-full items-center justify-center gap-3 rounded-card bg-primary px-5 py-3 font-semibold text-white shadow-glow transition hover:bg-primary-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary active:bg-primary-active disabled:cursor-not-allowed disabled:opacity-60 sm:w-fit lg:px-6"
             onClick={handlePrimaryAction}
             disabled={isPrimaryButtonDisabled}
+            aria-label={`${primaryButtonLabel}: ${episode.title}`}
           >
             {isSelectedEpisodePlaying ? (
-              <Pause className="size-5 fill-current" />
+              <Pause className="size-5 fill-current" aria-hidden="true" />
             ) : (
-              <Play className="size-5 fill-current" />
+              <Play className="size-5 fill-current" aria-hidden="true" />
             )}
             {primaryButtonLabel}
           </button>
@@ -341,9 +361,10 @@ const DetailPanel = ({ episode, className = "" }: DetailPanelProps) => {
             href="#"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex w-full items-center justify-center gap-3 rounded-card border border-border bg-card px-5 py-3 font-semibold text-foreground transition hover:border-primary hover:text-primary sm:w-fit lg:px-6"
+            className="inline-flex w-full items-center justify-center gap-3 rounded-card border border-border bg-card px-5 py-3 font-semibold text-foreground transition hover:border-primary hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-fit lg:px-6"
+            aria-label={`Otwórz odcinek ${episode.title} na polskieradio.pl`}
           >
-            <ExternalLink className="size-5" />
+            <ExternalLink className="size-5" aria-hidden="true" />
             Otwórz na polskieradio.pl
           </a>
         </div>

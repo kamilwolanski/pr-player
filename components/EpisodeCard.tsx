@@ -47,7 +47,7 @@ const EpisodeCard = ({ episode, active }: EpisodeCardProps) => {
           <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.04),transparent_45%)]" />
 
           <div className="relative flex size-10 items-center justify-center rounded-pill border border-primary/40 bg-primary/10 text-primary shadow-glow sm:size-11">
-            <Mic2 className="size-5 sm:size-6" strokeWidth={2.4} />
+            <Mic2 className="size-5 sm:size-6" strokeWidth={2.4} aria-hidden="true" />
           </div>
         </div>
       )}
@@ -78,18 +78,20 @@ const EpisodeCard = ({ episode, active }: EpisodeCardProps) => {
             {episode.externalAudioId && (
               <span
                 title="Dostępne w audio"
+                aria-label="Dostępne w audio"
                 className="flex size-7 items-center justify-center rounded-full border border-primary/60 text-primary"
               >
-                <AudioLines className="size-3.5" />
+                <AudioLines className="size-3.5" aria-hidden="true" />
               </span>
             )}
 
             {episode.externalVideoId && (
               <span
                 title="Dostępne w wideo"
+                aria-label="Dostępne w wideo"
                 className="flex size-7 items-center justify-center rounded-full border border-border text-muted"
               >
-                <VideoIcon className="size-3.5" />
+                <VideoIcon className="size-3.5" aria-hidden="true" />
               </span>
             )}
           </div>

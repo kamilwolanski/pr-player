@@ -30,7 +30,10 @@ const EpisodesList = ({
         Odcinki podcastów
       </h1>
 
-      <div className="space-y-3 pr-1 lg:max-h-[calc(100vh-400px)] lg:overflow-y-auto">
+      <div
+        className="space-y-3 pr-1 lg:max-h-[calc(100vh-400px)] lg:overflow-y-auto"
+        aria-busy={isLoadingMore}
+      >
         {episodes.map((episode) => {
           const isSelected = selectedEpisodeId === episode.id;
 
@@ -39,7 +42,9 @@ const EpisodesList = ({
               key={episode.id}
               type="button"
               onClick={() => onEpisodeSelect(episode)}
-              className="block w-full text-left"
+              aria-current={isSelected ? "true" : undefined}
+              aria-label={`Wybierz odcinek: ${episode.title}`}
+              className="block w-full rounded-2xl text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               <div className="hidden lg:block">
                 <EpisodeCard episode={episode} active={isSelected} />
@@ -60,7 +65,8 @@ const EpisodesList = ({
               type="button"
               onClick={onLoadMore}
               disabled={isLoadingMore}
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border-soft bg-panel px-4 text-sm font-semibold text-foreground transition hover:border-primary/70 hover:bg-card-hover disabled:cursor-not-allowed disabled:opacity-70"
+              aria-label="Pokaż więcej odcinków"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-border-soft bg-panel px-4 text-sm font-semibold text-foreground transition hover:border-primary/70 hover:bg-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isLoadingMore ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />

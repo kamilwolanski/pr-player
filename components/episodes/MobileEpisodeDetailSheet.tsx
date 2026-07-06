@@ -25,13 +25,16 @@ const MobileEpisodeDetailSheet = ({
         type="button"
         aria-label="Zamknij szczegóły odcinka"
         onClick={onClose}
-        className={`fixed inset-x-0 top-0 z-30 cursor-default bg-background/75 backdrop-blur-sm transition-opacity duration-200 ${playerOffsetClassName} ${
+        className={`fixed inset-x-0 top-0 z-30 cursor-default bg-background/75 backdrop-blur-sm transition-opacity duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-primary ${playerOffsetClassName} ${
           isOpen ? "opacity-100" : "opacity-0"
         }`}
       />
 
       <section
-        aria-label="Szczegóły wybranego odcinka"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Szczegóły odcinka: ${episode.title}`}
+        aria-hidden={!isOpen}
         onTransitionEnd={(event) => {
           if (event.target !== event.currentTarget) return;
           if (event.propertyName !== "translate") return;
@@ -45,15 +48,15 @@ const MobileEpisodeDetailSheet = ({
         }`}
       >
         <div className="sticky top-0 z-10 flex items-center justify-center bg-panel/95 px-4 py-3 backdrop-blur">
-          <div className="h-1.5 w-24 rounded-pill bg-muted/70" />
+          <div className="h-1.5 w-24 rounded-pill bg-muted/70" aria-hidden="true" />
 
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full text-foreground transition hover:bg-elevated"
+            className="absolute right-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full text-foreground transition hover:bg-elevated focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             aria-label="Zamknij szczegóły odcinka"
           >
-            <ChevronDown className="size-6" />
+            <ChevronDown className="size-6" aria-hidden="true" />
           </button>
         </div>
 
